@@ -1,6 +1,5 @@
-import os
-import sys
 import logging
+import sys
 from pathlib import Path
 
 import discord
@@ -10,14 +9,9 @@ from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env")
 
-TOKEN = os.getenv("DISCORD_TOKEN")
-OWNER_ID = int(os.getenv("BOT_OWNER_ID", "0"))
-PREFIX = os.getenv("PREFIX", ".")
+from src.config import load_settings
 
-if not TOKEN:
-    raise RuntimeError("DISCORD_TOKEN is not configured")
-if not OWNER_ID:
-    raise RuntimeError("BOT_OWNER_ID is not configured")
+settings = load_settings()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -32,19 +26,18 @@ class Bot(commands.Bot):
         intents = discord.Intents.default()
         intents.message_content = True
         super().__init__(
-            command_prefix=commands.when_mentioned_or(PREFIX),
+            command_prefix=commands.when_mentioned_or(settings.prefix),
             intents=intents,
-            owner_id=OWNER_ID,
+            owner_id=settings.owner_id,
             case_insensitive=True,
             strip_after_prefix=True,
         )
 
     async def setup_hook(self) -> None:
-        # Cogs are added here as the project grows.
         await self.load_extension("src.cogs.core")
         synced = await self.tree.sync()
         log.info("Registered %d global slash commands.", len(synced))
-        log.info("Prefix commands use %r", PREFIX)
+        log.info("Prefix commands use %r", settings.prefix)
 
     async def on_ready(self) -> None:
         log.info("Logged in as %s (%s)", self.user, self.user.id if self.user else "?")
@@ -69,4 +62,4 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
 
 
 if __name__ == "__main__":
-    bot.run(TOKEN, log_handler=None)
+    bot.run(settings.token, log_handler=None)
