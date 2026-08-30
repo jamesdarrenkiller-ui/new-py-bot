@@ -1,4 +1,4 @@
-import os,time
+import time
 from pathlib import Path
 import discord
 from discord import app_commands
@@ -31,16 +31,16 @@ class Core(commands.Cog):
         if i.user.id!=self.bot.owner_id: return await i.response.send_message('❌ Only the bot owner can manage No Prefix.',ephemeral=True)
         if action.value=='list': return await i.response.send_message('**No Prefix Users**\n'+('\n'.join(f'<@{x}>' for x in sorted(self.noprefix)) or 'None'),ephemeral=True)
         if not user: return await i.response.send_message('❌ Provide a user.',ephemeral=True)
-        (self.noprefix.add if action.value=='grant' else self.noprefix.discard)(user.id); self.save(); await i.response.send_message(f'✅ No Prefix {action.value}ed for {user.mention}.',ephemeral=True)
+        if action.value=='grant': self.noprefix.add(user.id)
+        else: self.noprefix.discard(user.id)
+        self.save(); await i.response.send_message(f'✅ No Prefix {action.value}ed for {user.mention}.',ephemeral=True)
     @commands.command(name='noprefix')
     @commands.is_owner()
     async def prefix_noprefix(self,ctx,action:str,user:discord.User|None=None):
-        if action.lower()=='list': return await ctx.send('**No Prefix Users:** '+(', '.join(f'<@{x}>' for x in sorted(self.noprefix)) or 'None'))
-        if action.lower() not in ('grant','revoke') or not user: return await ctx.send(f'Usage: `{ctx.prefix}noprefix <grant|revoke|list> [user]`')
-        (self.noprefix.add if action.lower()=='grant' else self.noprefix.discard)(user.id); self.save(); await ctx.send(f'✅ No Prefix {action.lower()}ed for {user.mention}.')
-    async def on_message(self,message):
-        if message.author.bot: return
-        if message.author.id in self.noprefix or message.author.id==self.bot.owner_id:
-            ctx=await self.bot.get_context(message)
-            if ctx.valid: await self.bot.invoke(ctx)
+        action=action.lower()
+        if action=='list': return await ctx.send('**No Prefix Users:** '+(', '.join(f'<@{x}>' for x in sorted(self.noprefix)) or 'None'))
+        if action not in ('grant','revoke') or not user: return await ctx.send(f'Usage: `{ctx.prefix}noprefix <grant|revoke|list> [user]`')
+        if action=='grant': self.noprefix.add(user.id)
+        else: self.noprefix.discard(user.id)
+        self.save(); await ctx.send(f'✅ No Prefix {action}ed for {user.mention}.')
 async def setup(bot): await bot.add_cog(Core(bot))
