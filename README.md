@@ -2,6 +2,8 @@
 
 **Veyronix** is a modular `discord.py` all-in-one Discord bot with slash commands and `.` prefix commands.
 
+> **Made by James**
+
 ## ✨ Veyronix Features
 
 - Slash commands with startup registration logs
@@ -110,4 +112,5 @@ If a credential has been exposed publicly, rotate it before deploying Veyronix. 
 
 ---
 
-**Veyronix** • Python Discord Bot
+**Veyronix** • Python Discord Bot  
+**Made by James**
